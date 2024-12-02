@@ -22,7 +22,7 @@ from lib.utils import mask_loss,compute_loss,predict_and_evaluate
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", type=str, help='configuration file',default='./config/nyc/TDNet_NYC_Config.json')
-parser.add_argument("--gpus", type=str,help="test program",default='6')
+parser.add_argument("--gpus", type=str,help="test program",default='5')
 parser.add_argument("--test", action="store_true", help="test program")
 
 args = parser.parse_args()
@@ -41,11 +41,11 @@ west_east_map = config['west_east_map']
 
 all_data_filename = config['all_data_filename']
 mask_filename = config['mask_filename']
-
 road_adj_filename = config['road_adj_filename']
 risk_adj_filename = config['risk_adj_filename']
 grid_node_filename = config['grid_node_filename']
-spatial_temporal_embedding_dim = 64
+
+spatial_temporal_embedding_dim = 128
 
 grid_node_map = get_grid_node_map_maxtrix(grid_node_filename)   #TODO：400x243
 num_of_vertices = grid_node_map.shape[1]
