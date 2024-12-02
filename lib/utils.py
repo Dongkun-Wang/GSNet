@@ -148,7 +148,7 @@ def compute_loss(net,dataloader,risk_mask,road_adj,risk_adj,
     temp = []
     for feature,target_time,graph_feature,label in dataloader:
         feature,target_time,graph_feature,label = feature.to(device),target_time.to(device),graph_feature.to(device),label.to(device)
-        l = mask_loss(net(feature,target_time,graph_feature,road_adj,risk_adj,grid_node_map),label,risk_mask,data_type)#l的shape：(1,)
+        l = mask_loss(net(feature,target_time,graph_feature,road_adj,risk_adj),label,risk_mask,data_type)#l的shape：(1,)
         temp.append(l.cpu().item())
     loss_mean = sum(temp) / len(temp)
     return loss_mean
@@ -178,7 +178,7 @@ def predict_and_evaluate(net,dataloader,risk_mask,road_adj,risk_adj,
     label_list = []
     for feature,target_time,graph_feature,label in dataloader:
         feature,target_time,graph_feature,label = feature.to(device),target_time.to(device),graph_feature.to(device),label.to(device)
-        prediction_list.append(net(feature,target_time,graph_feature,road_adj,risk_adj,grid_node_map).cpu().numpy())
+        prediction_list.append(net(feature,target_time,graph_feature,road_adj,risk_adj).cpu().numpy())
         label_list.append(label.cpu().numpy())
     prediction = np.concatenate(prediction_list, 0)
     label = np.concatenate(label_list, 0)

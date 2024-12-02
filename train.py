@@ -98,7 +98,7 @@ def training(net,
             train_feature, target_time = train_feature.to(device), target_time.to(device)
             gragh_feature, train_label = gragh_feature.to(device), train_label.to(device)
             # 计算损失
-            l = mask_loss(net(train_feature, target_time, gragh_feature, road_adj, risk_adj, grid_node_map),
+            l = mask_loss(net(train_feature, target_time, gragh_feature, road_adj, risk_adj),
                           train_label, risk_mask, data_type=data_type)
             trainer.zero_grad()
             l.backward()
@@ -275,7 +275,7 @@ def main(config):
 
     TDNet_Model = TDNet(seq_len,pre_len,graph_feature_shape[3],
                    train_data_shape[2],spatial_temporal_embedding_dim,
-                    north_south_map,west_east_map)
+                    north_south_map,west_east_map,grid_node_map)
     #TODO：多线程用不上
     if torch.cuda.device_count() > 1:
         print("Let's use", torch.cuda.device_count(), "GPUs!",flush=True)
