@@ -37,8 +37,9 @@ class TDNet(nn.Module):
         self.spatial_model = GSAT(
             in_features=seq_len * num_of_input_feature,
             out_features=st_embedding_dim,
-            num_heads=8,
-            hidden_features=128
+            num_heads=4,
+            hidden_features=128,
+            tau=0.2
         )
 
         # Temporal model
@@ -50,8 +51,8 @@ class TDNet(nn.Module):
             num_layers=3,
             feedforward_dim=128,
             seq_len=st_embedding_dim,
-            tau=0.1,
-            dropout=0.1
+            tau=0.2,
+            dropout=0.2
         )
 
         # Middle and output layers

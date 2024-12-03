@@ -11,7 +11,7 @@
     "road_adj_filename": "data/nyc/road_adj.pkl",
     "risk_adj_filename": "data/nyc/risk_adj.pkl",
     "grid_node_filename": "data/nyc/grid_node_map.pkl",
-    
+
     "recent_prior": 3,
     "week_prior": 4,
     "one_day_period": 24,
@@ -22,8 +22,9 @@
     "valid_rate": 0.2,
     "training_epoch": 200,
     "optimizer": "adam",
+    "num_of_input_feature": 48,
 
-    "batch_size": 64,
+    "batch_size": 128,
     "learning_rate": 0.0001,
     "num_of_gru_layers": 5,
     "gru_hidden_size": 256,
