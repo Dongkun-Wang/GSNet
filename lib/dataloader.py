@@ -193,6 +193,8 @@ def load_or_create_dataset(config, args):
     days_of_week = config['days_of_week']
     pre_len = config['pre_len']
     all_data_filename = config['all_data_filename']
+    grid_node_filename = config['grid_node_filename']
+    grid_node_map = get_grid_node_map_maxtrix(grid_node_filename)  # TODO：400x243
 
     # 获取文件路径的目录部分
     dir_name = os.path.dirname(all_data_filename)
@@ -287,6 +289,9 @@ def process_graph_x(x, grid_node_map, dataset_name):
     返回：
         graph_x: 处理后的图数据。
     """
+    north_south_map = 20
+    west_east_map = 20
+
     if dataset_name == 'nyc':
         indices = [0, 46, 47]
     elif dataset_name == 'chicago':
