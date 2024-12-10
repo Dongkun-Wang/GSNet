@@ -33,35 +33,28 @@ class GSAT(nn.Module):
         self.output_layer1 = nn.Linear(num_heads * hidden_features, hidden_features, bias=False)
         self.output_layer2 = nn.Linear(num_heads * out_features, out_features, bias=False)
 
-    def gumbel_softmax(self, logits, tau):
-        """Gumbel-Softmax 的稀疏注意力实现。"""
-        eps = torch.finfo(logits.dtype).eps  # 获取数据类型的机器精度
-        uniform_noise = torch.rand_like(logits)
-        gumbel_noise = -torch.log(-torch.log(uniform_noise + eps) + eps)
-        y = logits + gumbel_noise
-        return F.softmax(y / tau, dim=-2)  # 注意这里的维度
-
     def attention_layer(self, h, a_src, a_dst, adj):
         # 调整 a_src 和 a_dst 的维度
-        a_src_expanded = a_src.unsqueeze(0).unsqueeze(1)  # 形状：(1, 1, num_heads, features)
+        a_src_expanded = a_src.unsqueeze(0).unsqueeze(1)  # (1, 1, num_heads, features)
         a_dst_expanded = a_dst.unsqueeze(0).unsqueeze(1)
 
         # 计算源和目标节点的注意力投影
-        h_src = (h * a_src_expanded).sum(dim=-1)  # 形状：(batch_size, num_nodes, num_heads)
+        h_src = (h * a_src_expanded).sum(dim=-1)  # (batch_size, num_nodes, num_heads)
         h_dst = (h * a_dst_expanded).sum(dim=-1)
 
         # 计算注意力得分
-        scores = h_src.unsqueeze(2) + h_dst.unsqueeze(1)  # 形状：(batch_size, num_nodes, num_nodes, num_heads)
+        scores = h_src.unsqueeze(2) + h_dst.unsqueeze(1)  # (batch_size, num_nodes, num_nodes, num_heads)
 
         # 应用邻接矩阵掩码
-        adj_expanded = adj.unsqueeze(0).unsqueeze(-1)  # 形状：(1, num_nodes, num_nodes, 1)
+        adj_expanded = adj.unsqueeze(0).unsqueeze(-1)  # (1, num_nodes, num_nodes, 1)
         scores = scores * adj_expanded
 
-        # 使用 Gumbel-Softmax 计算稀疏注意力
-        sparse_attention = self.gumbel_softmax(scores, self.tau)  # 在第二维（邻居）上 softmax
+        # 使用 F.gumbel_softmax 计算稀疏注意力
+        # 注意力沿邻接维度进行softmax，即第二维，dim=-2
+        sparse_attention = F.gumbel_softmax(scores, tau=self.tau, hard=False, dim=-2)
 
         # 信息传递：邻居特征的加权和
-        h_prime = torch.einsum("bmnk,bmhd->bnhd", sparse_attention, h)  # 形状：(batch_size, num_nodes, num_heads, features)
+        h_prime = torch.einsum("bmnk,bmhd->bnhd", sparse_attention, h)  # (batch_size, num_nodes, num_heads, features)
 
         return h_prime
 
@@ -69,19 +62,12 @@ class GSAT(nn.Module):
         batch_size, num_nodes, _ = x.size()
 
         #### 第一层图卷积 ####
-
-        # 线性变换并重塑以适应多头注意力
         h1 = self.W1(x).view(batch_size, num_nodes, self.num_heads, self.hidden_features)
-
-        # 使用注意力层
         h_prime1 = self.attention_layer(h1, self.a_src1, self.a_dst1, adj)
-
-        # 合并多头输出
         h_prime1 = h_prime1.reshape(batch_size, num_nodes, -1)
         h_prime1 = F.leaky_relu(self.output_layer1(h_prime1))
 
         #### 第二层图卷积 ####
-
         h2 = self.W2(h_prime1).view(batch_size, num_nodes, self.num_heads, self.out_features)
         h_prime2 = self.attention_layer(h2, self.a_src2, self.a_dst2, adj)
         h_prime2 = h_prime2.reshape(batch_size, num_nodes, -1)

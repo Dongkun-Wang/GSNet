@@ -1,10 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import numpy as np
 
 class GumbelSparseAttention(nn.Module):
     def __init__(self, embed_dim, num_heads, seq_len, tau=0.1):
